@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Routing\Controller;
 
-class UserController extends Controller
+class AuthController extends Controller
 {
     public function register(Request $request)
     {
@@ -20,7 +20,7 @@ class UserController extends Controller
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
-            'password' => bcrypt($validated['password']),  // Hash the password
+            'password' => bcrypt($validated['password']) // Hash the password
         ]);
 
         return response()->json(['message' => 'User registered successfully'], 201);
