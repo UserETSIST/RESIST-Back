@@ -38,20 +38,20 @@ class EventRepository
         return $query->orderBy('lastdetectiontimestamp', 'desc')->get();
     }
 
-    public function getSevenPastDaysEvents($jamming = null, $spoofing = null)
+    public function getRecentEvents($days,$jammer = null, $spoofer = null)
     {
         $query = DB::table('events')
-            ->where('lastdetectiontimestamp', '>=', Carbon::now()->subDays(7))  // Events from the last 7 days
+            ->where('lastdetectiontimestamp', '>=', Carbon::now()->subDays($days))  // Events from the last days
             ->orderBy('lastdetectiontimestamp', 'desc');
 
         // Add jamming filter if provided
-        if (!is_null($jamming)) {
-            $query->where('jamming', $jamming ? 1 : 0);
+        if ($jammer) {
+            $query->where('jamming', 1);
         }
 
         // Add spoofing filter if provided
-        if (!is_null($spoofing)) {
-            $query->where('spoofing', $spoofing ? 1 : 0);
+        if ($spoofer) {
+            $query->where('spoofing', 1);
         }
 
         return $query->get();

@@ -40,6 +40,7 @@ Route::prefix('contact')->group(function () {
 
 // EVENTS
 Route::post('/filtered-events', [EventController::class, 'getFilteredEvents']);
+Route::get('/recent-events', [EventController::class, 'getRecentEvents']);
 
 
 
