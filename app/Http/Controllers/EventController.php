@@ -18,6 +18,33 @@ class EventController
     }
 
 
+    public function getAllEventsPaginated(Request $request)
+    {
+        try {
+            // Get 'per_page' from query parameters or default to 10
+            $perPage = $request->query('per_page', 10);  
+
+            // Fetch paginated events from the repository
+            $events = $this->eventRepo->getAllEventsPaginated((int)$perPage);
+
+            // Return success response with paginated data
+            return response()->json([
+                'success' => true,
+                'data' => $events,
+                'message' => 'Events retrieved successfully with pagination',
+            ], \Symfony\Component\HttpFoundation\Response::HTTP_OK);
+
+        } catch (\Exception $e) {
+            // Handle general errors
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while retrieving events',
+                'error' => $e->getMessage(),
+            ], \Symfony\Component\HttpFoundation\Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
     public function getFilteredEvents(Request $request)
     {
         {

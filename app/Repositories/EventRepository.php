@@ -7,10 +7,13 @@ use Illuminate\Support\Carbon;
 
 class EventRepository
 {
-    public function getAll()
+    public function getAllEventsPaginated($perPage = 10)
     {
-        return DB::table('events')->get();
+        return DB::table('events')
+            ->orderBy('lastdetectiontimestamp', 'desc')  // Sort by most recent events
+            ->paginate($perPage);
     }
+
 
     /**
      * Get events based on jammer, spoofer, and date range conditions.
