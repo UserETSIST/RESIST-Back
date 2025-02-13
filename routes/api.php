@@ -26,7 +26,7 @@ Route::prefix('newsletter')->group(function () {
     Route::get('/subscribers', [NewsletterSubscriberController::class, 'index']);
     Route::post('/subscribe', [NewsletterSubscriberController::class, 'store']);
     Route::get('/subscriber/{id}', [NewsletterSubscriberController::class, 'show']);
-    Route::put('/unsubscribe/{id}', [NewsletterSubscriberController::class, 'unsubscribe']);
+    Route::put('/unsubscribe', [NewsletterSubscriberController::class, 'unsubscribe']);
 });
 
 
