@@ -32,9 +32,8 @@ Route::prefix('newsletter')->group(function () {
 
 // CONTACT-US FORMS
 Route::prefix('contact')->group(function () {
-    Route::get('/submissions', [ContactUsController::class, 'index']);
-    Route::post('/submit', [ContactUsController::class, 'store']);
-    Route::get('/submission/{id}', [ContactUsController::class, 'show']);
+    Route::post('/contact-us', [ContactUsController::class, 'store']);
+    Route::get('/contact-us', [ContactUsController::class, 'index']);
 });
 
 

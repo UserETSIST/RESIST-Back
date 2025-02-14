@@ -12,13 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('contact_us', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('surname');
-            $table->string('email')->unique();
-            $table->string('phone')->nullable();
-            $table->text('message');
-            $table->timestamps();
+            $table->id();                                // Clave primaria (bigint auto-increment)
+            $table->string('name', 255);                 // Nombre del remitente (máximo 255 caracteres)
+            $table->string('email', 255);                // Email del remitente (máximo 255 caracteres)
+            $table->string('phone', 20)->nullable();     // Teléfono opcional (máximo 20 caracteres)
+            $table->text('message');                     // Mensaje de contacto
+            $table->dateTime('created_at'); 
         });
     }
 

@@ -4,42 +4,71 @@ namespace App\Http\Controllers;
 
 use App\Models\ContactUs;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
+use Exception;
 use Illuminate\Routing\Controller;
+use Symfony\Component\HttpFoundation\Response;
 
 class ContactUsController extends Controller
 {
-    // List all contact form submissions
-    public function index()
-    {
-        $contacts = ContactUs::all();
-        return response()->json($contacts);
-    }
-
-    // Store a new contact form submission
+    /**
+     * Almacenar un nuevo mensaje de contacto.
+     */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'surname' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255',
-            'phone' => 'nullable|string|max:20',
-            'message' => 'required|string',
-        ]);
+        try {
+            // Validar la solicitud
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'email' => 'required|email|max:255',
+                'phone' => 'nullable|string|max:20',
+                'message' => 'required|string',
+            ]);
 
-        $contact = ContactUs::create($validated);
+            // Llamar a la función del modelo para crear el mensaje
+            ContactUs::createMessage($validated);
 
-        return response()->json(['message' => 'Your message has been sent successfully!', 'contact' => $contact], 201);
+            return response()->json([
+                'success' => true,
+                'message' => 'Your message has been sent successfully',
+            ], Response::HTTP_CREATED);
+
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while sending your message',
+                'error' => $e->getMessage(),  // Opcional: Ocultar en producción
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
-    // Show a specific contact form submission by ID
-    public function show($id)
+    /**
+     * Listar todos los mensajes de contacto.
+     */
+    public function index()
     {
-        $contact = ContactUs::find($id);
+        try {
+            // Llamar a la función del modelo para obtener los mensajes
+            $messages = ContactUs::getAllMessages();
 
-        if (!$contact) {
-            return response()->json(['message' => 'Contact submission not found'], 404);
+            return response()->json([
+                'success' => true,
+                'data' => $messages,
+            ], Response::HTTP_OK);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while retrieving messages',
+                'error' => $e->getMessage(),  // Opcional: Ocultar en producción
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-
-        return response()->json($contact);
     }
 }
