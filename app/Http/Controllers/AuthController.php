@@ -4,53 +4,149 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Routing\Controller;
+use Illuminate\Database\QueryException;
+use Exception;
 
 class AuthController extends Controller
 {
+    /**
+     * Register a new user.
+     */
     public function register(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8',
-        ]);
+        try {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'email' => 'required|string|email|max:255|unique:users',
+                'password' => 'required|string|min:8',
+            ]);
 
-        $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => bcrypt($validated['password']) // Hash the password
-        ]);
+            // Call the User model's register function
+            $user = User::register($validated);
 
-        return response()->json(['message' => 'User registered successfully'], 201);
+            return response()->json(['message' => 'User registered successfully', 'user' => $user], 201);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (QueryException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This email is already registered',
+                'error' => $e->getMessage(), // Optional: Hide this in production
+            ], 409);  // Conflict
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An unexpected error occurred while registering the user',
+                'error' => $e->getMessage(), // Optional: Hide this in production
+            ], 500);
+        }
     }
 
+    /**
+     * Login a user and generate a token.
+     */
     public function login(Request $request)
     {
-        $validated = $request->validate([
-            'email' => 'required|string|email',
-            'password' => 'required|string',
-        ]);
+        try {
+            $validated = $request->validate([
+                'email' => 'required|string|email',
+                'password' => 'required|string',
+            ]);
 
-        $user = User::where('email', $validated['email'])->first();
+            $token = User::login($validated['email'], $validated['password']);
 
-        if (!$user || !Hash::check($validated['password'], $user->password)) {
-            return response()->json(['message' => 'Invalid credentials'], 401);
+            if (!$token) {
+                throw ValidationException::withMessages([
+                    'email' => ['The provided credentials are incorrect.'],
+                ]);
+            }
+
+            return response()->json([
+                'access_token' => $token,
+                'token_type' => 'Bearer',
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid credentials',
+                'errors' => $e->errors(),
+            ], 401);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred during login',
+                'error' => $e->getMessage(),
+            ], 500);
         }
-
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        return response()->json([
-            'access_token' => $token,
-            'token_type' => 'Bearer',
-        ]);
     }
 
+    /**
+     * Logout the authenticated user.
+     */
     public function logout(Request $request)
     {
-        $request->user()->tokens()->delete();
-
-        return response()->json(['message' => 'Successfully logged out']);
+        try {
+            $request->user()->tokens()->delete();
+            return response()->json(['message' => 'Successfully logged out']);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while logging out',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
+
+    /**
+     * Get the authenticated user's profile.
+     */
+    public function profile(Request $request)
+    {
+        try {
+            return response()->json($request->user());
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while retrieving user profile',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function listAllUsers(Request $request)
+    {
+        try {
+            // Ensure the user is authenticated and an admin
+            if (!$request->user() || !$request->user()->is_admin) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Access denied. Only admins can access this resource.',
+                ], 403);  // Forbidden
+            }
+
+            // Call the User model's listAllUsers method
+            $users = User::listAllUsers();
+
+            return response()->json([
+                'success' => true,
+                'data' => $users,
+                'message' => 'Users retrieved successfully',
+            ], 200);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to retrieve users',
+                'error' => $e->getMessage(),  // Optional: hide this in production
+            ], 500);
+        }
+    }
+
+
 }

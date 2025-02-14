@@ -2,59 +2,92 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-
+use Exception;
+use Illuminate\Support\Facades\Hash;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, HasApiTokens, Notifiable;
+    use HasApiTokens, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
-        'name',
-        'email',
-        'password',
+        'name', 'email', 'password', 'is_admin', 'is_active'
     ];
 
-    protected $attributes = [
-        'is_admin' => false,
-    ];
-
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
-        'password',
-        'remember_token',
+        'password', 'remember_token',
+    ];
+
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'is_admin' => 'boolean',
+        'is_active' => 'boolean',
     ];
 
     /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
+     * List all users.
      */
-    protected function casts(): array
+    public static function listAllUsers()
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        try {
+            return self::orderBy('created_at', 'desc')->get();
+        } catch (Exception $e) {
+            throw new Exception("Failed to list users: " . $e->getMessage());
+        }
     }
 
+    /**
+     * Register a new user.
+     */
+    public static function register(array $data)
+    {
+        try {
+            $data['password'] = bcrypt($data['password']);
+            return self::create($data);
+        } catch (Exception $e) {
+            throw new Exception("Failed to register user: " . $e->getMessage());
+        }
+    }
 
+    /**
+     * Login user.
+     */
+    public static function login($email, $password)
+    {
+        try {
+            $user = self::where('email', $email)->first();
 
+            if ($user && Hash::check($password, $user->password)) {
+                return $user->createToken('auth_token')->plainTextToken;
+            }
+            return null;
+        } catch (Exception $e) {
+            throw new Exception("Failed to login: " . $e->getMessage());
+        }
+    }
 
+    /**
+     * Logout user.
+     */
+    public static function logout($user)
+    {
+        try {
+            $user->tokens()->delete();
+            return true;
+        } catch (Exception $e) {
+            throw new Exception("Failed to logout: " . $e->getMessage());
+        }
+    }
 
+    public function tickets()
+    {
+        return $this->hasMany(Ticket::class);  // A user can have many tickets
+    }
 
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);  // A user can have many comments
+    }
 }
