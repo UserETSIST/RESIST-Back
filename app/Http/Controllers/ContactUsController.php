@@ -52,23 +52,32 @@ class ContactUsController extends Controller
     /**
      * Listar todos los mensajes de contacto.
      */
-    public function index()
-    {
-        try {
-            // Llamar a la función del modelo para obtener los mensajes
-            $messages = ContactUs::getAllMessages();
-
-            return response()->json([
-                'success' => true,
-                'data' => $messages,
-            ], Response::HTTP_OK);
-
-        } catch (Exception $e) {
+    public function index(Request $request)
+{
+    try {
+        // Ensure the authenticated user is an admin
+        if (!$request->user() || !$request->user()->is_admin) {
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred while retrieving messages',
-                'error' => $e->getMessage(),  // Opcional: Ocultar en producción
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+                'message' => 'Access denied. Only admins can list messages.',
+            ], Response::HTTP_FORBIDDEN);  // 403 Forbidden
         }
+
+        // Call the function from the model to retrieve all messages
+        $messages = ContactUs::getAllMessages();
+
+        return response()->json([
+            'success' => true,
+            'data' => $messages,
+        ], Response::HTTP_OK);
+
+    } catch (Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'An error occurred while retrieving messages',
+            'error' => $e->getMessage(),  // Optional: hide this in production
+        ], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
+}
+
 }
