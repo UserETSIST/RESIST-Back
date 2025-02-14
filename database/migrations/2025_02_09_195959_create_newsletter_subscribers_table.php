@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('newsletter_subscribers', function (Blueprint $table) {
             $table->id();
             $table->string('email')->unique();  // Unique to prevent duplicate subscriptions
-            $table->string('subscription_status')->default('subscribed'); // 'subscribed', 'unsubscribed', 'pending'
+            $table->string('subscription_status');
             $table->timestamp('subscribed_at')->nullable(); // When the user subscribed
             $table->timestamp('unsubscribed_at')->nullable(); // When the user unsubscribed (if applicable)
             $table->timestamps(); // Adds created_at and updated_at

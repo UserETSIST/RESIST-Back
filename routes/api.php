@@ -24,8 +24,7 @@ Route::middleware('auth:sanctum')->group(function () {
 // NEWSLETTER SUBSCRIBERS
 Route::prefix('newsletter')->group(function () {
     Route::get('/subscribers', [NewsletterSubscriberController::class, 'index']);
-    Route::post('/subscribe', [NewsletterSubscriberController::class, 'store']);
-    Route::get('/subscriber/{id}', [NewsletterSubscriberController::class, 'show']);
+    Route::post('/subscribe', [NewsletterSubscriberController::class, 'subscribe']);
     Route::put('/unsubscribe', [NewsletterSubscriberController::class, 'unsubscribe']);
 });
 
