@@ -24,11 +24,9 @@ class Event extends Model
         $query = DB::table('events')
             ->whereBetween('last_detection', [$startDate, $endDate]);
 
-        if ($jammer) {
+        if ($jammer && !$spoofer) {
             $query->where('jamming', 1);
-        }
-
-        if ($spoofer) {
+        } elseif (!$jammer && $spoofer) {
             $query->where('spoofing', 1);
         }
 

@@ -60,7 +60,11 @@ class User extends Authenticatable
             $user = self::where('email', $email)->first();
 
             if ($user && Hash::check($password, $user->password)) {
-                return $user->createToken('auth_token')->plainTextToken;
+                $token = $user->createToken('auth_token')->plainTextToken;
+                return [
+                    'token' => $token,
+                    'is_admin' => $user->is_admin  // Return if the user is an admin
+                ];
             }
             return null;
         } catch (Exception $e) {

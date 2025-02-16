@@ -52,39 +52,42 @@ class AuthController extends Controller
      * Login a user and generate a token.
      */
     public function login(Request $request)
-    {
-        try {
-            $validated = $request->validate([
-                'email' => 'required|string|email',
-                'password' => 'required|string',
+{
+    try {
+        $validated = $request->validate([
+            'email' => 'required|string|email',
+            'password' => 'required|string',
+        ]);
+
+        // Call the login method in the User model
+        $result = User::login($validated['email'], $validated['password']);
+
+        if (!$result) {
+            throw ValidationException::withMessages([
+                'email' => ['The provided credentials are incorrect.'],
             ]);
-
-            $token = User::login($validated['email'], $validated['password']);
-
-            if (!$token) {
-                throw ValidationException::withMessages([
-                    'email' => ['The provided credentials are incorrect.'],
-                ]);
-            }
-
-            return response()->json([
-                'access_token' => $token,
-                'token_type' => 'Bearer',
-            ]);
-        } catch (ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Invalid credentials',
-                'errors' => $e->errors(),
-            ], 401);
-        } catch (Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'An error occurred during login',
-                'error' => $e->getMessage(),
-            ], 500);
         }
+
+        return response()->json([
+            'access_token' => $result['token'],
+            'token_type' => 'Bearer',
+            'is_admin' => $result['is_admin'],  // Include admin status in the response
+        ], 200);
+    } catch (ValidationException $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Invalid credentials',
+            'errors' => $e->errors(),
+        ], 401);
+    } catch (Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'An error occurred during login',
+            'error' => $e->getMessage(),  // Optional: hide this in production
+        ], 500);
     }
+}
+
 
     /**
      * Logout the authenticated user.

@@ -46,10 +46,18 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 
-//TICKETS
+// TICKETS
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/tickets', [TicketController::class, 'store']);
     Route::put('/tickets/{id}', [TicketController::class, 'update']);
     Route::get('/tickets', [TicketController::class, 'index']);
     Route::get('/my-tickets', [TicketController::class, 'myTickets']);
+});
+
+
+// COMMENTS
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/tickets/{ticketId}/comments', [CommentController::class, 'listCommentsByTicket']);  // List comments for a ticket
+    Route::post('/comments', [CommentController::class, 'store']);  // Create a new comment
+    // Route::put('/comments/{id}', [CommentController::class, 'update']);  // Update a comment
 });
