@@ -9,6 +9,7 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\CommentController;
 
+
 Route::get('/', function () {
     return 'API';
 });
@@ -23,6 +24,12 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user();
     });
 });
+
+
+// RESET PASSWORD
+Route::post('/forgot-password', [AuthController::class, 'sendResetLinkEmail']);
+Route::post('/reset-password', [AuthController::class, 'reset']);
+
 
 // NEWSLETTER SUBSCRIBERS
 Route::prefix('newsletter')->group(function () {

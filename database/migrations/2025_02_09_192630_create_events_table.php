@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        
+
 
         Schema::create('events', function (Blueprint $table) {
             $table->id();                                // Clave primaria (bigint auto-increment)
