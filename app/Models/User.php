@@ -14,7 +14,7 @@ class User extends Authenticatable
     use HasApiTokens, Notifiable;
 
     protected $fillable = [
-        'name', 'email', 'password', 'is_admin', 'is_active'
+        'first_name','last_name', 'email', 'password', 'is_admin', 'is_active', 'email_is_verified'
     ];
 
     protected $hidden = [
@@ -25,6 +25,7 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'is_admin' => 'boolean',
         'is_active' => 'boolean',
+        'email_is_verified' => 'boolean',
     ];
 
     /**
@@ -64,7 +65,8 @@ class User extends Authenticatable
                 $token = $user->createToken('auth_token')->plainTextToken;
                 return [
                     'token' => $token,
-                    'is_admin' => $user->is_admin  // Return if the user is an admin
+                    'is_admin' => $user->is_admin,
+                    'is_active' => $user->is_active
                 ];
             }
             return null;
