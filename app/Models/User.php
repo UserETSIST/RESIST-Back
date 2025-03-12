@@ -14,11 +14,18 @@ class User extends Authenticatable
     use HasApiTokens, Notifiable;
 
     protected $fillable = [
-        'first_name','last_name', 'email', 'password', 'is_admin', 'is_active', 'email_is_verified'
+        'first_name',
+        'last_name',
+        'email',
+        'password',
+        'is_admin',
+        'is_active',
+        'email_is_verified'
     ];
 
     protected $hidden = [
-        'password', 'remember_token',
+        'password',
+        'remember_token',
     ];
 
     protected $casts = [
@@ -61,7 +68,7 @@ class User extends Authenticatable
         try {
             $user = self::where('email', $email)->first();
 
-            if ($user && Hash::check($password, $user->password)) {
+            if ($user->is_active && Hash::check($password, $user->password)) {
                 $token = $user->createToken('auth_token')->plainTextToken;
                 return [
                     'token' => $token,
@@ -99,30 +106,30 @@ class User extends Authenticatable
     }
 
     /**
- * Soft delete a user by setting is_active to false.
- */
-public static function softDeleteUser($id)
-{
-    try {
-        // Find the user by ID
-        $user = self::findOrFail($id);
+     * Soft delete a user by setting is_active to false.
+     */
+    public static function softDeleteUser($id)
+    {
+        try {
+            // Find the user by ID
+            $user = self::findOrFail($id);
 
-        // Set the user as inactive (soft delete)
-        $user->update([
-            'is_active' => false
-        ]);
+            // Set the user as inactive (soft delete)
+            $user->update([
+                'is_active' => false
+            ]);
 
-        return [
-            'success' => true,
-            'message' => 'User deactivated successfully.'
-        ];
-    } catch (Exception $e) {
-        throw new Exception("Failed to delete user: " . $e->getMessage());
+            return [
+                'success' => true,
+                'message' => 'User deactivated successfully.'
+            ];
+        } catch (Exception $e) {
+            throw new Exception("Failed to delete user: " . $e->getMessage());
+        }
     }
-}
 
 
- /**
+    /**
      * Update user data
      */
     public static function updateUser($id, array $data)
@@ -145,5 +152,4 @@ public static function softDeleteUser($id)
             throw new Exception("Failed to update user: " . $e->getMessage());
         }
     }
-
 }
