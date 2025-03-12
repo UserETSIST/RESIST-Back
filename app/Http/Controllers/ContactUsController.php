@@ -8,6 +8,7 @@ use Illuminate\Validation\ValidationException;
 use Exception;
 use Illuminate\Routing\Controller;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Log;
 
 class ContactUsController extends Controller
 {
@@ -55,6 +56,11 @@ class ContactUsController extends Controller
     public function index(Request $request)
 {
     try {
+
+        Log::info('Authenticated user:', [
+            'user' => $request->user(),
+            'is_admin' => $request->user() ? $request->user()->is_admin : 'No user'
+        ]);
         // Ensure the authenticated user is an admin
         if (!$request->user() || !$request->user()->is_admin) {
             return response()->json([

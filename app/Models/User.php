@@ -97,4 +97,53 @@ class User extends Authenticatable
     {
         return $this->hasMany(Comment::class);  // A user can have many comments
     }
+
+    /**
+ * Soft delete a user by setting is_active to false.
+ */
+public static function softDeleteUser($id)
+{
+    try {
+        // Find the user by ID
+        $user = self::findOrFail($id);
+
+        // Set the user as inactive (soft delete)
+        $user->update([
+            'is_active' => false
+        ]);
+
+        return [
+            'success' => true,
+            'message' => 'User deactivated successfully.'
+        ];
+    } catch (Exception $e) {
+        throw new Exception("Failed to delete user: " . $e->getMessage());
+    }
+}
+
+
+ /**
+     * Update user data
+     */
+    public static function updateUser($id, array $data)
+    {
+        try {
+            // Find the user
+            $user = self::findOrFail($id);
+
+            // If password is provided, hash it
+            if (!empty($data['password'])) {
+                $data['password'] = Hash::make($data['password']);
+            }
+
+            // Update user fields (only provided values)
+            $user->fill($data);
+            $user->save(); // Force an update even if nothing changed
+
+            return $user;
+        } catch (Exception $e) {
+            throw new Exception("Failed to update user: " . $e->getMessage());
+        }
+    }
+
 }

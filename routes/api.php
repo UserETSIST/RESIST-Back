@@ -28,6 +28,8 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/register', [UserController::class, 'register']);
     Route::get('/users', [UserController::class, 'listAllUsers']);
+    Route::patch('/users/{id}/deactivate', [UserController::class, 'deactivateUser']);
+    Route::patch('/users/{id}', [UserController::class, 'updateUser']);
 
 });
 
@@ -47,9 +49,10 @@ Route::prefix('newsletter')->group(function () {
 // CONTACT-US FORMS
 Route::prefix('contact')->group(function () {
     Route::post('/contact-us', [ContactUsController::class, 'store']);
-    Route::get('/contact-us', [ContactUsController::class, 'index']);
 });
-
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/contact/contact-us', [ContactUsController::class, 'index']);
+});
 
 // EVENTS
 Route::middleware('auth:sanctum')->group(function () {
